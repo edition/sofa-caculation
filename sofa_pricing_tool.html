@@ -1,0 +1,2378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>沙发产品报价工具</title>
+    <style>
+        /* 基础样式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', 'SF Pro Text', 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1d1d1f;
+            font-weight: 600;
+            font-size: 32px;
+        }
+        
+        /* 产品展示区 */
+        .product-display {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 30px;
+        }
+        
+        .product-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        /* 搜索下拉框样式 */
+        .search-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .model-dropdown {
+            position: relative;
+        }
+        
+        .model-dropdown-content {
+            position: absolute;
+            background-color: white;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 0 0 4px 4px;
+            z-index: 100;
+            display: none;
+        }
+        
+        .model-dropdown-content div {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .model-dropdown-content div:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .model-dropdown-content div:last-child {
+            border-bottom: none;
+        }
+        
+        .model-dropdown-selected {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .model-dropdown-selected:after {
+            content: "";
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid #333;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        /* 结果区域 - 苹果风格 */
+        .results {
+            margin-top: 40px;
+            padding: 0;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            transform: translateY(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .results:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .results h3 {
+            padding: 20px;
+            margin: 0;
+            font-size: 22px;
+            font-weight: 500;
+            color: #1d1d1f;
+            border-bottom: 1px solid #f2f2f2;
+            background: linear-gradient(to right, #f8f8f8, white);
+        }
+        
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            margin: 0;
+            border-bottom: 1px solid #f2f2f2;
+            transition: all 0.2s ease;
+        }
+        
+        .price-item:hover {
+            background-color: #f9f9f9;
+            padding-left: 24px;
+        }
+        
+        .price-item:last-child {
+            border-bottom: none;
+        }
+        
+        .price-item span:first-child {
+            color: #1d1d1f;
+            font-weight: 400;
+        }
+        
+        .price-item span:last-child {
+            color: #0066cc;
+            font-weight: 500;
+            font-size: 18px;
+            transition: color 0.2s ease;
+            display: inline-block;
+        }
+        
+        .price-item span:last-child.updated {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        /* 主要价格项 */
+        .price-item.primary {
+            background-color: #fafafa;
+        }
+        
+        .price-item.primary span:first-child {
+            font-weight: 500;
+        }
+        
+        .price-item.primary span:last-child {
+            color: #0066cc;
+            font-size: 22px;
+            font-weight: 600;
+        }
+        
+        .price-item.primary:hover span:last-child {
+            color: #0077ed;
+        }
+        
+        /* 次要价格项 */
+        .price-item.secondary {
+            background-color: white;
+        }
+        
+        .price-item.secondary span:first-child {
+            font-size: 14px;
+            color: #86868b;
+        }
+        
+        .price-item.secondary span:last-child {
+            font-size: 14px;
+            color: #86868b;
+        }
+        
+        /* 响应式布局 */
+        @media (min-width: 768px) {
+            .product-display {
+                flex-direction: row;
+                align-items: center;
+            }
+            
+            .product-image {
+                width: 40%;
+                margin-right: 20px;
+                margin-bottom: 0;
+            }
+            
+            .form-container {
+                width: 60%;
+            }
+            
+            .form-row {
+                display: flex;
+                gap: 15px;
+            }
+            
+            .form-group {
+                flex: 1;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .results {
+                margin-top: 30px;
+            }
+            
+            .results h3 {
+                font-size: 20px;
+                padding: 15px;
+            }
+            
+            .price-item {
+                padding: 12px 15px;
+            }
+            
+            .price-item.primary span:last-child {
+                font-size: 18px;
+            }
+        }
+        
+        /* 型号系数表格 */
+        .model-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .model-info h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .model-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        
+        .model-table th, .model-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .model-table th {
+            background-color: #f2f2f2;
+        }
+        
+        .model-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .toggle-info {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .toggle-info:hover {
+            background-color: #2980b9;
+        }
+
+        /* 价格结果动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 销售报价区域样式 */
+        .sales-price-section {
+            margin-top: 20px;
+            border-top: 1px solid #f2f2f2;
+            padding-top: 20px;
+        }
+
+        .sales-price-section h4 {
+            font-size: 16px;
+            color: #86868b;
+            margin-bottom: 15px;
+            padding: 0 20px;
+            font-weight: 500;
+        }
+
+        .price-item.sales-price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background-color: white;
+        }
+
+        .price-item.sales-price .price-content {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-right: 15px;
+        }
+
+        .price-item.sales-price span:first-child {
+            font-size: 14px;
+            color: #86868b;
+        }
+
+        .price-item.sales-price span:last-child {
+            font-size: 14px;
+            color: #1d1d1f;
+        }
+
+        .copy-btn {
+            background-color: #f5f5f7;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #0066cc;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background-color: #e8e8ed;
+        }
+
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
+
+        .copy-btn.copied {
+            background-color: #e8e8ed;
+            color: #34c759;
+        }
+
+        /* 销售报价系数输入框样式 */
+        .sales-coefficient {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border: 1px solid #f2f2f2;
+        }
+
+        .sales-coefficient label {
+            font-size: 14px;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+        }
+
+        .sales-coefficient input {
+            width: 120px;
+            padding: 8px;
+            border: 1px solid #d2d2d7;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1d1d1f;
+        }
+
+        /* 销售报价样式 */
+        .sales-price-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            margin: 0;
+            border-bottom: 1px solid #f2f2f2;
+            background-color: #fcfcfc;
+            font-size: 14px;
+        }
+
+        .sales-price-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .sales-price-item span:first-child {
+            color: #86868b;
+        }
+
+        .sales-price-item span:nth-child(2) {
+            color: #1d1d1f;
+            margin-right: 10px;
+        }
+
+        .copy-button {
+            background-color: #f5f5f7;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #0066cc;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .copy-button:hover {
+            background-color: #e8e8ed;
+            color: #0077ed;
+        }
+
+        .copy-button.copied {
+            background-color: #e8e8ed;
+            color: #34c759;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>沙发产品报价工具</h1>
+        
+        <div class="product-display">
+            <img id="productImage" src="https://via.placeholder.com/500x300?text=请选择沙发型号" alt="沙发产品图片" class="product-image">
+            
+            <div class="form-container">
+                <div class="form-group">
+                    <label for="modelSearch">沙发型号:</label>
+                    <div class="search-container">
+                        <input type="text" id="modelSearch" placeholder="搜索型号...">
+                        <div class="model-dropdown">
+                            <div class="model-dropdown-selected" id="selectedModel">请选择沙发型号</div>
+                            <div class="model-dropdown-content" id="modelDropdownContent">
+                                <div data-value="">请选择沙发型号</div>
+                                <div data-value="S001">大象耳朵</div>
+                                <div data-value="S002">云朵</div>
+                                <div data-value="S003">大马士革</div>
+                                <div data-value="S004">吐司</div>
+                                <div data-value="S005">豆腐块</div>
+                                <div data-value="S006">面包</div>
+                                <div data-value="S007">大黑牛</div>
+                                <div data-value="S008">云沙发</div>
+                                <div data-value="S009">布雷泽</div>
+                                <div data-value="S010">棉花糖</div>
+                                <div data-value="S011">香奈儿</div>
+                                <div data-value="S012">布达佩斯（直排）</div>
+                                <div data-value="S013">布达佩斯（贵妃组合）</div>
+                                <div data-value="S014">花瓣（160小贵妃）</div>
+                                <div data-value="S015">花瓣（185大贵妃）</div>
+                                <div data-value="S016">劳伦斯</div>
+                                <div data-value="S017">康纳利</div>
+                                <div data-value="S018">锐驰</div>
+                                <div data-value="S019">泡芙</div>
+                                <div data-value="S020">阿克提波</div>
+                                <div data-value="S021">钢琴键</div>
+                                <div data-value="S022">迈阿密</div>
+                                <div data-value="S023">格兰德</div>
+                                <div data-value="S024">蒙德里安</div>
+                                <div data-value="S025">地平线</div>
+                                <div data-value="S026">迪兰</div>
+                                <div data-value="S027">像素</div>
+                                <div data-value="S028">马拉伦加</div>
+                                <div data-value="S029">安东尼</div>
+                                <div data-value="S030">雪橇</div>
+                                <div data-value="S031">怀抱</div>
+                                <div data-value="S032">科罗纳多</div>
+                                <div data-value="S033">圣日尔曼</div>
+                                <div data-value="S034">西部沙发</div>
+                                <div data-value="S035">john-john</div>
+                            </div>
+                        </div>
+                        <div id="modelError" class="error-message">请选择沙发型号</div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sizeInput">尺寸 (厘米):</label>
+                        <input type="text" id="sizeInput" placeholder="请输入尺寸">
+                        <div id="sizeError" class="error-message">请输入有效的数字</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fabricPriceInput">面料价格(布) (元/米):</label>
+                        <input type="text" id="fabricPriceInput" placeholder="请输入布料价格">
+                        <div id="fabricPriceError" class="error-message">请输入有效的数字</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="leatherPriceInput">面料价格(真皮) (元/米):</label>
+                    <input type="text" id="leatherPriceInput" placeholder="请输入真皮价格">
+                    <div id="leatherPriceError" class="error-message">请输入有效的数字</div>
+                </div>
+
+                <!-- 移除原有的报价系数输入框 -->
+                <div class="form-group" id="priceFactorInput" style="display: none;"></div>
+
+                <!-- 修改销售报价系数样式和位置 -->
+                <div class="sales-coefficient">
+                    <label for="salesCoefficient">销售报价系数：</label>
+                    <input type="number" id="salesCoefficient" step="0.01" min="0" value="1.0" placeholder="请输入系数">
+                </div>
+                
+                <!-- 劳伦斯型号的五金选择 -->
+                <div class="form-group" id="hardwareOptionsContainer" style="display: none;">
+                    <label>五金配件选择:</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <div style="flex: 1;">
+                            <input type="radio" id="singleLayerHardware" name="hardwareType" value="single" checked>
+                            <label for="singleLayerHardware">单层五金 (250元/个)</label>
+                        </div>
+                        <div style="flex: 1;">
+                            <input type="radio" id="doubleLayerHardware" name="hardwareType" value="double">
+                            <label for="doubleLayerHardware">双层五金 (400元/个)</label>
+                        </div>
+                    </div>
+                    <label for="hardwareQuantityInput">五金数量:</label>
+                    <input type="number" id="hardwareQuantityInput" min="1" value="1" placeholder="请输入数量">
+                    <div id="hardwareQuantityError" class="error-message">请输入有效的数量</div>
+                </div>
+                
+                <!-- 康纳利型号的五金选择 -->
+                <div class="form-group" id="connollyOptionsContainer" style="display: none;">
+                    <label>五金配件选择:</label>
+                    
+                    <!-- 钢板扶手选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                            <input type="checkbox" id="steelArmrestCheckbox" style="width: auto; margin-right: 10px;">
+                            <label for="steelArmrestCheckbox" style="display: inline; margin-bottom: 0;">钢板扶手 (700元/个)</label>
+                        </div>
+                        <div id="steelArmrestQuantityContainer" style="display: none;">
+                            <label for="steelArmrestQuantityInput">数量:</label>
+                            <input type="number" id="steelArmrestQuantityInput" min="1" value="1" placeholder="请输入数量">
+                            <div id="steelArmrestQuantityError" class="error-message">请输入有效的数量</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 底框油边选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center;">
+                            <input type="checkbox" id="frameEdgeCheckbox" style="width: auto; margin-right: 10px;">
+                            <label for="frameEdgeCheckbox" style="display: inline; margin-bottom: 0;">底框油边 (300元)</label>
+                        </div>
+                    </div>
+                    
+                    <!-- 不锈钢长脚选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="longLegQuantityInput">不锈钢长脚 (180元/个):</label>
+                        <input type="number" id="longLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="longLegQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                    
+                    <!-- 不锈钢短脚选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="shortLegQuantityInput">不锈钢短脚 (50元/个):</label>
+                        <input type="number" id="shortLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="shortLegQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                </div>
+                
+                <!-- 阿克提波型号的五金选择 -->
+                <div class="form-group" id="aktipoOptionsContainer" style="display: none;">
+                    <label>五金配件选择:</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <div style="flex: 1;">
+                            <input type="radio" id="threeSeaterHardware" name="aktipoHardwareType" value="three" checked>
+                            <label for="threeSeaterHardware">三人位五金 (1200元)</label>
+                        </div>
+                        <div style="flex: 1;">
+                            <input type="radio" id="singleSeaterHardware" name="aktipoHardwareType" value="single">
+                            <label for="singleSeaterHardware">单人位五金 (650元)</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 钢琴键型号的五金选择 -->
+                <div class="form-group" id="pianoOptionsContainer" style="display: none;">
+                    <label>五金配件选择:</label>
+                    
+                    <!-- 不锈钢五金选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="steelHardwareQuantityInput">不锈钢五金 (250元/个):</label>
+                        <input type="number" id="steelHardwareQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="steelHardwareQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                    
+                    <!-- 木柜选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="woodCabinetQuantityInput">木柜 (450元/个):</label>
+                        <input type="number" id="woodCabinetQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="woodCabinetQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                    
+                    <!-- 飞翼扶手选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="wingArmrestQuantityInput">飞翼扶手 (450元/个):</label>
+                        <input type="number" id="wingArmrestQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="wingArmrestQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                </div>
+                
+                <!-- 地平线型号的五金选择 -->
+                <div class="form-group" id="horizonOptionsContainer" style="display: none;">
+                    <label>五金配件选择:</label>
+                    
+                    <!-- 直排五金选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="straightHardwareQuantityInput">直排五金 (300元/个):</label>
+                        <input type="number" id="straightHardwareQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="straightHardwareQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                    
+                    <!-- 异形五金选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="irregularHardwareQuantityInput">异形五金 (420元/个):</label>
+                        <input type="number" id="irregularHardwareQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="irregularHardwareQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                </div>
+                
+                <!-- 迪兰型号的五金选择 -->
+                <div class="form-group" id="dylanOptionsContainer" style="display: none;">
+                    <label>五金配件选择:</label>
+                    
+                    <!-- 不锈钢五金脚选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="dylanSteelLegQuantityInput">不锈钢五金脚 (100元/个):</label>
+                        <input type="number" id="dylanSteelLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="dylanSteelLegQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                </div>
+                
+                <!-- 安东尼型号的五金选择 -->
+                <div class="form-group" id="anthonyOptionsContainer" style="display: none;">
+                    <label>五金配件选择:</label>
+                    
+                    <!-- 不锈钢五金脚选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="anthonySteelLegQuantityInput">不锈钢五金脚 (150元/个):</label>
+                        <input type="number" id="anthonySteelLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="anthonySteelLegQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                </div>
+                
+                <!-- 雪橇型号的五金选择 -->
+                <div class="form-group" id="sledOptionsContainer" style="display: none;">
+                    <label>五金配件选择:</label>
+                    
+                    <!-- 不锈钢五金脚选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="sledSteelLegQuantityInput">不锈钢五金脚 (100元/个):</label>
+                        <input type="number" id="sledSteelLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="sledSteelLegQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                </div>
+                
+                <!-- 怀抱型号的五金选择 -->
+                <div class="form-group" id="embraceOptionsContainer" style="display: none;">
+                    <label>五金配件选择:</label>
+                    
+                    <!-- 不锈钢鸭嘴脚选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="duckbillLegQuantityInput">不锈钢鸭嘴脚 (25元/个):</label>
+                        <input type="number" id="duckbillLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="duckbillLegQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                </div>
+                
+                <!-- 西部型号的五金选择 -->
+                <div class="form-group" id="westernOptionsContainer" style="display: none;">
+                    <label>五金配件选择:</label>
+                    
+                    <!-- 不锈钢底座选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="steelBaseQuantityInput">不锈钢底座 (200元/个):</label>
+                        <input type="number" id="steelBaseQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="steelBaseQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                    
+                    <!-- 不锈钢油边靠背选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="steelBackrestQuantityInput">不锈钢油边靠背 (300元/个):</label>
+                        <input type="number" id="steelBackrestQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="steelBackrestQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                </div>
+                
+                <!-- John-John型号的五金选择 -->
+                <div class="form-group" id="johnJohnOptionsContainer" style="display: none;">
+                    <label>五金配件选择:</label>
+                    
+                    <!-- 实心不锈钢脚选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="solidSteelLegQuantityInput">实心不锈钢脚 (50元/个):</label>
+                        <input type="number" id="solidSteelLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="solidSteelLegQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                </div>
+                
+                <!-- 蒙德里安型号的五金选择 -->
+                <div class="form-group" id="mondrianOptionsContainer" style="display: none;">
+                    <label>五金配件选择:</label>
+                    
+                    <!-- 实心不锈钢鸭嘴脚选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="mondrianDuckbillLegQuantityInput">实心不锈钢鸭嘴脚 (25元/个):</label>
+                        <input type="number" id="mondrianDuckbillLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="mondrianDuckbillLegQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                    
+                    <!-- 木柜选项 -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="mondrianCabinetQuantityInput">木柜 (450元/个):</label>
+                        <input type="number" id="mondrianCabinetQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <div id="mondrianCabinetQuantityError" class="error-message">请输入有效的数量</div>
+                    </div>
+                </div>
+                
+                <button class="toggle-info" id="toggleModelInfo">显示型号系数信息</button>
+            </div>
+        </div>
+        
+        <div class="model-info" id="modelInfoSection" style="display: none;">
+            <h3>沙发型号系数表</h3>
+            <table class="model-table">
+                <thead>
+                    <tr>
+                        <th>型号</th>
+                        <th>布艺系数</th>
+                        <th>接触面真皮系数</th>
+                        <th>全皮系数</th>
+                        <th>五金配件价格</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>大象耳朵</td>
+                        <td>8.5</td>
+                        <td>8.5</td>
+                        <td>8.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>云朵</td>
+                        <td>9.5</td>
+                        <td>9.5</td>
+                        <td>9.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>大马士革</td>
+                        <td>9.5</td>
+                        <td>9.5</td>
+                        <td>9.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>吐司</td>
+                        <td>9.0</td>
+                        <td>9.0</td>
+                        <td>9.0</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>豆腐块</td>
+                        <td>7.5</td>
+                        <td>7.5</td>
+                        <td>7.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>面包</td>
+                        <td>10.0</td>
+                        <td>10.0</td>
+                        <td>10.0</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>大黑牛</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>云沙发</td>
+                        <td>12.0</td>
+                        <td>12.0</td>
+                        <td>12.0</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>布雷泽</td>
+                        <td>9.0</td>
+                        <td>9.0</td>
+                        <td>9.0</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>棉花糖</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>香奈儿</td>
+                        <td>9.5</td>
+                        <td>9.5</td>
+                        <td>9.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>布达佩斯（直排）</td>
+                        <td>8.0</td>
+                        <td>8.0</td>
+                        <td>8.0</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>布达佩斯（贵妃组合）</td>
+                        <td>8.5</td>
+                        <td>8.5</td>
+                        <td>8.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>花瓣（160小贵妃）</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>花瓣（185大贵妃）</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>劳伦斯</td>
+                        <td>9.5</td>
+                        <td>9.5</td>
+                        <td>9.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>康纳利</td>
+                        <td>8.5</td>
+                        <td>8.5</td>
+                        <td>8.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>锐驰</td>
+                        <td>8.0</td>
+                        <td>8.0</td>
+                        <td>8.0</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>泡芙</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>阿克提波</td>
+                        <td>8.5</td>
+                        <td>8.5</td>
+                        <td>8.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>钢琴键</td>
+                        <td>9.5</td>
+                        <td>9.5</td>
+                        <td>9.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>迈阿密</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>格兰德</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>蒙德里安</td>
+                        <td>9.5</td>
+                        <td>9.5</td>
+                        <td>9.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>地平线</td>
+                        <td>10.0</td>
+                        <td>10.0</td>
+                        <td>10.0</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>迪兰</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>像素</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>10.5</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>马拉伦加</td>
+                        <td>12.0</td>
+                        <td>12.0</td>
+                        <td>12.0</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>安东尼</td>
+                        <td>12.0</td>
+                        <td>12.0</td>
+                        <td>12.0</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>雪橇</td>
+                        <td>12.0</td>
+                        <td>12.0</td>
+                        <td>12.0</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>怀抱</td>
+                        <td>10.0</td>
+                        <td>10.0</td>
+                        <td>10.0</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>科罗纳多</td>
+                        <td>10.0</td>
+                        <td>10.0</td>
+                        <td>10.0</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>圣日尔曼</td>
+                        <td>10.0</td>
+                        <td>10.0</td>
+                        <td>10.0</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>西部沙发</td>
+                        <td>9.0</td>
+                        <td>9.0</td>
+                        <td>9.0</td>
+                        <td>0 元</td>
+                    </tr>
+                    <tr>
+                        <td>john-john</td>
+                        <td>9.0</td>
+                        <td>9.0</td>
+                        <td>9.0</td>
+                        <td>0 元</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="results">
+            <h3>报价结果</h3>
+            <!-- 移除重复的销售报价系数 -->
+            <div class="price-item primary">
+                <span>布艺成本</span>
+                <span id="fabricResult">0.00 元</span>
+            </div>
+            <div class="sales-price-item">
+                <span>布艺销售报价</span>
+                <span id="fabricSalesResult">0.00 元</span>
+                <button class="copy-button" data-type="fabric">复制</button>
+            </div>
+            <div class="price-item primary">
+                <span>接触面真皮成本</span>
+                <span id="contactLeatherResult">0.00 元</span>
+            </div>
+            <div class="sales-price-item">
+                <span>接触面真皮销售报价</span>
+                <span id="contactLeatherSalesResult">0.00 元</span>
+                <button class="copy-button" data-type="contactLeather">复制</button>
+            </div>
+            <div class="price-item primary">
+                <span>全皮成本</span>
+                <span id="fullLeatherResult">0.00 元</span>
+            </div>
+            <div class="sales-price-item">
+                <span>全皮销售报价</span>
+                <span id="fullLeatherSalesResult">0.00 元</span>
+                <button class="copy-button" data-type="fullLeather">复制</button>
+            </div>
+            <div class="price-item primary" id="hardwareContainer" style="display: none;">
+                <span>五金配件附加费</span>
+                <span id="hardwareResult">0.00 元</span>
+            </div>
+            <div class="price-item secondary">
+                <span>布艺差价</span>
+                <span id="fabricPriceDiffResult">0.00 元</span>
+            </div>
+            <div class="price-item secondary" style="display: none;">
+                <span>布的用量</span>
+                <span id="fabricUsageResult">0.00 平方米</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 沙发型号数据和计算系数
+        const sofaModels = {
+            'S001': { 
+                fabricFactor: 8.5, 
+                contactLeatherFactor: 8.5, 
+                fullLeatherFactor: 8.5, 
+                hardwarePrice: 0,
+                image: 'doufu.png',
+                hasHardware: false,
+                name: '大象耳朵'
+            },
+            'S002': { 
+                fabricFactor: 9.5, 
+                contactLeatherFactor: 9.5, 
+                fullLeatherFactor: 9.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=云朵沙发',
+                hasHardware: false,
+                name: '云朵'
+            },
+            'S003': { 
+                fabricFactor: 9.5, 
+                contactLeatherFactor: 9.5, 
+                fullLeatherFactor: 9.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=大马士革沙发',
+                hasHardware: false,
+                name: '大马士革'
+            },
+            'S004': { 
+                fabricFactor: 9.0, 
+                contactLeatherFactor: 9.0, 
+                fullLeatherFactor: 9.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=吐司沙发',
+                hasHardware: false,
+                name: '吐司'
+            },
+            'S005': { 
+                fabricFactor: 7.5, 
+                contactLeatherFactor: 7.5, 
+                fullLeatherFactor: 7.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=豆腐块沙发',
+                hasHardware: false,
+                name: '豆腐块'
+            },
+            'S006': { 
+                fabricFactor: 10.0, 
+                contactLeatherFactor: 10.0, 
+                fullLeatherFactor: 10.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=面包沙发',
+                hasHardware: false,
+                name: '面包'
+            },
+            'S007': { 
+                fabricFactor: 10.5, 
+                contactLeatherFactor: 10.5, 
+                fullLeatherFactor: 10.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=大黑牛沙发',
+                hasHardware: false,
+                name: '大黑牛'
+            },
+            'S008': { 
+                fabricFactor: 12.0, 
+                contactLeatherFactor: 12.0, 
+                fullLeatherFactor: 12.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=云沙发',
+                hasHardware: false,
+                name: '云沙发'
+            },
+            'S009': { 
+                fabricFactor: 9.0, 
+                contactLeatherFactor: 9.0, 
+                fullLeatherFactor: 9.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=布雷泽沙发',
+                hasHardware: false,
+                name: '布雷泽'
+            },
+            'S010': { 
+                fabricFactor: 10.5, 
+                contactLeatherFactor: 10.5, 
+                fullLeatherFactor: 10.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=棉花糖沙发',
+                hasHardware: false,
+                name: '棉花糖'
+            },
+            'S011': { 
+                fabricFactor: 9.5, 
+                contactLeatherFactor: 9.5, 
+                fullLeatherFactor: 9.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=香奈儿沙发',
+                hasHardware: false,
+                name: '香奈儿'
+            },
+            'S012': { 
+                fabricFactor: 8.0, 
+                contactLeatherFactor: 8.0, 
+                fullLeatherFactor: 8.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=布达佩斯（直排）沙发',
+                hasHardware: false,
+                name: '布达佩斯（直排）'
+            },
+            'S013': { 
+                fabricFactor: 8.5, 
+                contactLeatherFactor: 8.5, 
+                fullLeatherFactor: 8.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=布达佩斯（贵妃组合）沙发',
+                hasHardware: false,
+                name: '布达佩斯（贵妃组合）'
+            },
+            'S014': { 
+                fabricFactor: 10.5, 
+                contactLeatherFactor: 10.5, 
+                fullLeatherFactor: 10.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=花瓣（160小贵妃）沙发',
+                hasHardware: false,
+                name: '花瓣（160小贵妃）'
+            },
+            'S015': { 
+                fabricFactor: 10.5, 
+                contactLeatherFactor: 10.5, 
+                fullLeatherFactor: 10.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=花瓣（185大贵妃）沙发',
+                hasHardware: false,
+                name: '花瓣（185大贵妃）'
+            },
+            'S016': { 
+                fabricFactor: 9.5, 
+                contactLeatherFactor: 9.5, 
+                fullLeatherFactor: 9.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=劳伦斯沙发',
+                hasHardware: true,
+                name: '劳伦斯',
+                specialHardware: true
+            },
+            'S017': { 
+                fabricFactor: 8.5, 
+                contactLeatherFactor: 8.5, 
+                fullLeatherFactor: 8.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=康纳利沙发',
+                hasHardware: true,
+                name: '康纳利',
+                specialHardware: true
+            },
+            'S018': { 
+                fabricFactor: 8.0, 
+                contactLeatherFactor: 8.0, 
+                fullLeatherFactor: 8.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=锐驰沙发',
+                hasHardware: false,
+                name: '锐驰'
+            },
+            'S019': { 
+                fabricFactor: 10.5, 
+                contactLeatherFactor: 10.5, 
+                fullLeatherFactor: 10.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=泡芙沙发',
+                hasHardware: false,
+                name: '泡芙'
+            },
+            'S020': { 
+                fabricFactor: 8.5, 
+                contactLeatherFactor: 8.5, 
+                fullLeatherFactor: 8.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=阿克提波沙发',
+                hasHardware: true,
+                name: '阿克提波',
+                specialHardware: true
+            },
+            'S021': { 
+                fabricFactor: 9.5, 
+                contactLeatherFactor: 9.5, 
+                fullLeatherFactor: 9.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=钢琴键沙发',
+                hasHardware: true,
+                name: '钢琴键',
+                specialHardware: true
+            },
+            'S022': { 
+                fabricFactor: 10.5, 
+                contactLeatherFactor: 10.5, 
+                fullLeatherFactor: 10.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=迈阿密沙发',
+                hasHardware: false,
+                name: '迈阿密'
+            },
+            'S023': { 
+                fabricFactor: 10.5, 
+                contactLeatherFactor: 10.5, 
+                fullLeatherFactor: 10.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=格兰德沙发',
+                hasHardware: false,
+                name: '格兰德'
+            },
+            'S024': { 
+                fabricFactor: 9.5, 
+                contactLeatherFactor: 9.5, 
+                fullLeatherFactor: 9.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=蒙德里安沙发',
+                hasHardware: true,
+                name: '蒙德里安',
+                specialHardware: true
+            },
+            'S025': { 
+                fabricFactor: 10.0, 
+                contactLeatherFactor: 10.0, 
+                fullLeatherFactor: 10.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=地平线沙发',
+                hasHardware: true,
+                name: '地平线',
+                specialHardware: true
+            },
+            'S026': { 
+                fabricFactor: 10.5, 
+                contactLeatherFactor: 10.5, 
+                fullLeatherFactor: 10.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=迪兰沙发',
+                hasHardware: true,
+                name: '迪兰',
+                specialHardware: true
+            },
+            'S027': { 
+                fabricFactor: 10.5, 
+                contactLeatherFactor: 10.5, 
+                fullLeatherFactor: 10.5, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=像素沙发',
+                hasHardware: false,
+                name: '像素'
+            },
+            'S028': { 
+                fabricFactor: 12.0, 
+                contactLeatherFactor: 12.0,
+                fullLeatherFactor: 12.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=马拉伦加沙发',
+                hasHardware: false,
+                name: '马拉伦加'
+            },
+            'S029': { 
+                fabricFactor: 12.0, 
+                contactLeatherFactor: 12.0, 
+                fullLeatherFactor: 12.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=安东尼沙发',
+                hasHardware: true,
+                name: '安东尼',
+                specialHardware: true
+            },
+            'S030': { 
+                fabricFactor: 12.0, 
+                contactLeatherFactor: 12.0, 
+                fullLeatherFactor: 12.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=雪橇沙发',
+                hasHardware: true,
+                name: '雪橇',
+                specialHardware: true
+            },
+            'S031': { 
+                fabricFactor: 10.0, 
+                contactLeatherFactor: 10.0, 
+                fullLeatherFactor: 10.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=怀抱沙发',
+                hasHardware: true,
+                name: '怀抱',
+                specialHardware: true
+            },
+            'S032': { 
+                fabricFactor: 10.0, 
+                contactLeatherFactor: 10.0, 
+                fullLeatherFactor: 10.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=科罗纳多沙发',
+                hasHardware: false,
+                name: '科罗纳多'
+            },
+            'S033': { 
+                fabricFactor: 10.0, 
+                contactLeatherFactor: 10.0, 
+                fullLeatherFactor: 10.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=圣日尔曼沙发',
+                hasHardware: false,
+                name: '圣日尔曼'
+            },
+            'S034': { 
+                fabricFactor: 9.0, 
+                contactLeatherFactor: 9.0, 
+                fullLeatherFactor: 9.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=西部沙发',
+                hasHardware: true,
+                name: '西部沙发',
+                specialHardware: true
+            },
+            'S035': { 
+                fabricFactor: 9.0, 
+                contactLeatherFactor: 9.0, 
+                fullLeatherFactor: 9.0, 
+                hardwarePrice: 0,
+                image: 'https://via.placeholder.com/500x300?text=john-john沙发',
+                hasHardware: true,
+                name: 'john-john',
+                specialHardware: true
+            }
+        };
+
+        // 获取所有DOM元素
+        const modelSearch = document.getElementById('modelSearch');
+        const selectedModel = document.getElementById('selectedModel');
+        const modelDropdownContent = document.getElementById('modelDropdownContent');
+        const modelOptions = modelDropdownContent.getElementsByTagName('div');
+        const sizeInput = document.getElementById('sizeInput');
+        const fabricPriceInput = document.getElementById('fabricPriceInput');
+        const leatherPriceInput = document.getElementById('leatherPriceInput');
+        const productImage = document.getElementById('productImage');
+        
+        const modelError = document.getElementById('modelError');
+        const sizeError = document.getElementById('sizeError');
+        const fabricPriceError = document.getElementById('fabricPriceError');
+        const leatherPriceError = document.getElementById('leatherPriceError');
+        
+        const fabricResult = document.getElementById('fabricResult');
+        const contactLeatherResult = document.getElementById('contactLeatherResult');
+        const fullLeatherResult = document.getElementById('fullLeatherResult');
+        const hardwareContainer = document.getElementById('hardwareContainer');
+        const hardwareResult = document.getElementById('hardwareResult');
+        const fabricUsageResult = document.getElementById('fabricUsageResult');
+        const fabricPriceDiffResult = document.getElementById('fabricPriceDiffResult');
+        
+        // 销售报价相关元素
+        const salesCoefficient = document.getElementById('salesCoefficient');
+        const fabricSalesResult = document.getElementById('fabricSalesResult');
+        const contactLeatherSalesResult = document.getElementById('contactLeatherSalesResult');
+        const fullLeatherSalesResult = document.getElementById('fullLeatherSalesResult');
+        const copyButtons = document.querySelectorAll('.copy-button');
+        
+        const toggleModelInfo = document.getElementById('toggleModelInfo');
+        const modelInfoSection = document.getElementById('modelInfoSection');
+        
+        // 五金配件相关元素
+        const hardwareOptionsContainer = document.getElementById('hardwareOptionsContainer');
+        const hardwareQuantityInput = document.getElementById('hardwareQuantityInput');
+        const hardwareQuantityError = document.getElementById('hardwareQuantityError');
+        const connollyOptionsContainer = document.getElementById('connollyOptionsContainer');
+        const steelArmrestCheckbox = document.getElementById('steelArmrestCheckbox');
+        const steelArmrestQuantityContainer = document.getElementById('steelArmrestQuantityContainer');
+        const steelArmrestQuantityInput = document.getElementById('steelArmrestQuantityInput');
+        const steelArmrestQuantityError = document.getElementById('steelArmrestQuantityError');
+        const frameEdgeCheckbox = document.getElementById('frameEdgeCheckbox');
+        const longLegQuantityContainer = document.getElementById('longLegQuantityContainer');
+        const longLegQuantityInput = document.getElementById('longLegQuantityInput');
+        const longLegQuantityError = document.getElementById('longLegQuantityError');
+        const shortLegQuantityContainer = document.getElementById('shortLegQuantityContainer');
+        const shortLegQuantityInput = document.getElementById('shortLegQuantityInput');
+        const shortLegQuantityError = document.getElementById('shortLegQuantityError');
+        const aktipoOptionsContainer = document.getElementById('aktipoOptionsContainer');
+        const pianoOptionsContainer = document.getElementById('pianoOptionsContainer');
+        const horizonOptionsContainer = document.getElementById('horizonOptionsContainer');
+        const dylanOptionsContainer = document.getElementById('dylanOptionsContainer');
+        const anthonyOptionsContainer = document.getElementById('anthonyOptionsContainer');
+        const sledOptionsContainer = document.getElementById('sledOptionsContainer');
+        const embraceOptionsContainer = document.getElementById('embraceOptionsContainer');
+        const johnJohnOptionsContainer = document.getElementById('johnJohnOptionsContainer');
+        const steelHardwareQuantityInput = document.getElementById('steelHardwareQuantityInput');
+        const woodCabinetQuantityInput = document.getElementById('woodCabinetQuantityInput');
+        const wingArmrestQuantityInput = document.getElementById('wingArmrestQuantityInput');
+        const straightHardwareQuantityInput = document.getElementById('straightHardwareQuantityInput');
+        const irregularHardwareQuantityInput = document.getElementById('irregularHardwareQuantityInput');
+        const dylanSteelLegQuantityInput = document.getElementById('dylanSteelLegQuantityInput');
+        const anthonySteelLegQuantityInput = document.getElementById('anthonySteelLegQuantityInput');
+        const sledSteelLegQuantityInput = document.getElementById('sledSteelLegQuantityInput');
+        const duckbillLegQuantityInput = document.getElementById('duckbillLegQuantityInput');
+        const steelBaseQuantityInput = document.getElementById('steelBaseQuantityInput');
+        const steelBackrestQuantityInput = document.getElementById('steelBackrestQuantityInput');
+        const solidSteelLegQuantityInput = document.getElementById('solidSteelLegQuantityInput');
+        const mondrianDuckbillLegQuantityInput = document.getElementById('mondrianDuckbillLegQuantityInput');
+        const mondrianCabinetQuantityInput = document.getElementById('mondrianCabinetQuantityInput');
+        const mondrianDuckbillLegQuantityError = document.getElementById('mondrianDuckbillLegQuantityError');
+        const mondrianCabinetQuantityError = document.getElementById('mondrianCabinetQuantityError');
+
+        // 当前选中的型号值
+        let currentModelValue = '';
+
+        // 点击下拉框显示选项
+        selectedModel.addEventListener('click', function() {
+            modelDropdownContent.style.display = modelDropdownContent.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // 点击选项选择型号
+        for (let i = 0; i < modelOptions.length; i++) {
+            modelOptions[i].addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                selectedModel.textContent = this.textContent;
+                currentModelValue = value;
+                modelDropdownContent.style.display = 'none';
+                
+                // 更新图片和五金配件显示
+                if (value && sofaModels[value]) {
+                    const modelData = sofaModels[value];
+                    productImage.src = modelData.image;
+                    
+                    // 对于劳伦斯型号，不显示五金配件价格（因为已包含在其他价格中）
+                    if (value === 'S016' || value === 'S017' || value === 'S020') {
+                        hardwareContainer.style.display = 'none';
+                    } else {
+                        hardwareContainer.style.display = modelData.hasHardware ? 'flex' : 'none';
+                    }
+                    
+                    // 检查是否是特殊型号（花瓣系列）
+                    if (value === 'S014' || value === 'S015') {
+                        // 禁用真皮价格输入
+                        leatherPriceInput.disabled = true;
+                        leatherPriceInput.value = '';
+                        leatherPriceInput.placeholder = "此型号不支持真皮价格";
+                        
+                        // 隐藏五金选项
+                        hardwareOptionsContainer.style.display = 'none';
+                        connollyOptionsContainer.style.display = 'none';
+                        aktipoOptionsContainer.style.display = 'none';
+                        pianoOptionsContainer.style.display = 'none';
+                        horizonOptionsContainer.style.display = 'none';
+                        dylanOptionsContainer.style.display = 'none';
+                        anthonyOptionsContainer.style.display = 'none';
+                        sledOptionsContainer.style.display = 'none';
+                        embraceOptionsContainer.style.display = 'none';
+                        johnJohnOptionsContainer.style.display = 'none';
+                        mondrianOptionsContainer.style.display = 'none';
+                    } 
+                    // 检查是否是劳伦斯型号（需要显示五金选项）
+                    else if (value === 'S016') {
+                        // 启用真皮价格输入
+                        leatherPriceInput.disabled = false;
+                        leatherPriceInput.placeholder = "请输入真皮价格";
+                        
+                        // 显示五金选项
+                        hardwareOptionsContainer.style.display = 'block';
+                        connollyOptionsContainer.style.display = 'none';
+                        aktipoOptionsContainer.style.display = 'none';
+                        pianoOptionsContainer.style.display = 'none';
+                        horizonOptionsContainer.style.display = 'none';
+                        dylanOptionsContainer.style.display = 'none';
+                        anthonyOptionsContainer.style.display = 'none';
+                        sledOptionsContainer.style.display = 'none';
+                        embraceOptionsContainer.style.display = 'none';
+                        johnJohnOptionsContainer.style.display = 'none';
+                        mondrianOptionsContainer.style.display = 'none';
+                    }
+                    // 检查是否是康纳利型号（需要显示五金选项）
+                    else if (value === 'S017') {
+                        // 启用真皮价格输入
+                        leatherPriceInput.disabled = false;
+                        leatherPriceInput.placeholder = "请输入真皮价格";
+                        
+                        // 显示五金选项
+                        hardwareOptionsContainer.style.display = 'none';
+                        connollyOptionsContainer.style.display = 'block';
+                        aktipoOptionsContainer.style.display = 'none';
+                        pianoOptionsContainer.style.display = 'none';
+                        horizonOptionsContainer.style.display = 'none';
+                        dylanOptionsContainer.style.display = 'none';
+                        anthonyOptionsContainer.style.display = 'none';
+                        sledOptionsContainer.style.display = 'none';
+                        embraceOptionsContainer.style.display = 'none';
+                        johnJohnOptionsContainer.style.display = 'none';
+                        mondrianOptionsContainer.style.display = 'none';
+                    }
+                    // 检查是否是阿克提波型号（需要显示五金选项）
+                    else if (value === 'S020') {
+                        // 启用真皮价格输入
+                        leatherPriceInput.disabled = false;
+                        leatherPriceInput.placeholder = "请输入真皮价格";
+                        
+                        // 显示五金选项
+                        hardwareOptionsContainer.style.display = 'none';
+                        connollyOptionsContainer.style.display = 'none';
+                        aktipoOptionsContainer.style.display = 'block';
+                        pianoOptionsContainer.style.display = 'none';
+                        horizonOptionsContainer.style.display = 'none';
+                        dylanOptionsContainer.style.display = 'none';
+                        anthonyOptionsContainer.style.display = 'none';
+                        sledOptionsContainer.style.display = 'none';
+                        embraceOptionsContainer.style.display = 'none';
+                        westernOptionsContainer.style.display = 'none';
+                        johnJohnOptionsContainer.style.display = 'none';
+                        mondrianOptionsContainer.style.display = 'none';
+                    }
+                    // 检查是否是钢琴键型号（需要显示五金选项）
+                    else if (value === 'S021') {
+                        // 启用真皮价格输入
+                        leatherPriceInput.disabled = false;
+                        leatherPriceInput.placeholder = "请输入真皮价格";
+                        
+                        // 显示五金选项
+                        hardwareOptionsContainer.style.display = 'none';
+                        connollyOptionsContainer.style.display = 'none';
+                        aktipoOptionsContainer.style.display = 'none';
+                        pianoOptionsContainer.style.display = 'block';
+                        horizonOptionsContainer.style.display = 'none';
+                        dylanOptionsContainer.style.display = 'none';
+                        anthonyOptionsContainer.style.display = 'none';
+                        sledOptionsContainer.style.display = 'none';
+                        embraceOptionsContainer.style.display = 'none';
+                        westernOptionsContainer.style.display = 'none';
+                        johnJohnOptionsContainer.style.display = 'none';
+                        mondrianOptionsContainer.style.display = 'none';
+                    }
+                    // 检查是否是地平线型号（需要显示五金选项）
+                    else if (value === 'S025') {
+                        // 启用真皮价格输入
+                        leatherPriceInput.disabled = false;
+                        leatherPriceInput.placeholder = "请输入真皮价格";
+                        
+                        // 显示五金选项
+                        hardwareOptionsContainer.style.display = 'none';
+                        connollyOptionsContainer.style.display = 'none';
+                        aktipoOptionsContainer.style.display = 'none';
+                        pianoOptionsContainer.style.display = 'none';
+                        horizonOptionsContainer.style.display = 'block';
+                        dylanOptionsContainer.style.display = 'none';
+                        anthonyOptionsContainer.style.display = 'none';
+                        sledOptionsContainer.style.display = 'none';
+                        embraceOptionsContainer.style.display = 'none';
+                        westernOptionsContainer.style.display = 'none';
+                        johnJohnOptionsContainer.style.display = 'none';
+                        mondrianOptionsContainer.style.display = 'none';
+                    }
+                    // 检查是否是迪兰型号（需要显示五金选项）
+                    else if (value === 'S026') {
+                        // 启用真皮价格输入
+                        leatherPriceInput.disabled = false;
+                        leatherPriceInput.placeholder = "请输入真皮价格";
+                        
+                        // 显示五金选项
+                        hardwareOptionsContainer.style.display = 'none';
+                        connollyOptionsContainer.style.display = 'none';
+                        aktipoOptionsContainer.style.display = 'none';
+                        pianoOptionsContainer.style.display = 'none';
+                        horizonOptionsContainer.style.display = 'none';
+                        dylanOptionsContainer.style.display = 'block';
+                        anthonyOptionsContainer.style.display = 'none';
+                        sledOptionsContainer.style.display = 'none';
+                        embraceOptionsContainer.style.display = 'none';
+                        westernOptionsContainer.style.display = 'none';
+                        johnJohnOptionsContainer.style.display = 'none';
+                        mondrianOptionsContainer.style.display = 'none';
+                    }
+                    // 检查是否是安东尼型号（需要显示五金选项）
+                    else if (value === 'S029') {
+                        // 启用真皮价格输入
+                        leatherPriceInput.disabled = false;
+                        leatherPriceInput.placeholder = "请输入真皮价格";
+                        
+                        // 显示五金选项
+                        hardwareOptionsContainer.style.display = 'none';
+                        connollyOptionsContainer.style.display = 'none';
+                        aktipoOptionsContainer.style.display = 'none';
+                        pianoOptionsContainer.style.display = 'none';
+                        horizonOptionsContainer.style.display = 'none';
+                        dylanOptionsContainer.style.display = 'none';
+                        anthonyOptionsContainer.style.display = 'block';
+                        sledOptionsContainer.style.display = 'none';
+                        embraceOptionsContainer.style.display = 'none';
+                        westernOptionsContainer.style.display = 'none';
+                        johnJohnOptionsContainer.style.display = 'none';
+                        mondrianOptionsContainer.style.display = 'none';
+                    }
+                    // 检查是否是雪橇型号（需要显示五金选项）
+                    else if (value === 'S030') {
+                        // 启用真皮价格输入
+                        leatherPriceInput.disabled = false;
+                        leatherPriceInput.placeholder = "请输入真皮价格";
+                        
+                        // 显示五金选项
+                        hardwareOptionsContainer.style.display = 'none';
+                        connollyOptionsContainer.style.display = 'none';
+                        aktipoOptionsContainer.style.display = 'none';
+                        pianoOptionsContainer.style.display = 'none';
+                        horizonOptionsContainer.style.display = 'none';
+                        dylanOptionsContainer.style.display = 'none';
+                        anthonyOptionsContainer.style.display = 'none';
+                        sledOptionsContainer.style.display = 'block';
+                        embraceOptionsContainer.style.display = 'none';
+                        westernOptionsContainer.style.display = 'none';
+                        johnJohnOptionsContainer.style.display = 'none';
+                        mondrianOptionsContainer.style.display = 'none';
+                    }
+                    // 检查是否是怀抱型号（需要显示五金选项）
+                    else if (value === 'S031') {
+                        // 启用真皮价格输入
+                        leatherPriceInput.disabled = false;
+                        leatherPriceInput.placeholder = "请输入真皮价格";
+                        
+                        // 显示五金选项
+                        hardwareOptionsContainer.style.display = 'none';
+                        connollyOptionsContainer.style.display = 'none';
+                        aktipoOptionsContainer.style.display = 'none';
+                        pianoOptionsContainer.style.display = 'none';
+                        horizonOptionsContainer.style.display = 'none';
+                        dylanOptionsContainer.style.display = 'none';
+                        anthonyOptionsContainer.style.display = 'none';
+                        sledOptionsContainer.style.display = 'none';
+                        embraceOptionsContainer.style.display = 'block';
+                        westernOptionsContainer.style.display = 'none';
+                        johnJohnOptionsContainer.style.display = 'none';
+                        mondrianOptionsContainer.style.display = 'none';
+                    }
+                    // 检查是否是西部型号（需要显示五金选项）
+                    else if (value === 'S034') {
+                        // 启用真皮价格输入
+                        leatherPriceInput.disabled = false;
+                        leatherPriceInput.placeholder = "请输入真皮价格";
+                        
+                        // 显示五金选项
+                        hardwareOptionsContainer.style.display = 'none';
+                        connollyOptionsContainer.style.display = 'none';
+                        aktipoOptionsContainer.style.display = 'none';
+                        pianoOptionsContainer.style.display = 'none';
+                        horizonOptionsContainer.style.display = 'none';
+                        dylanOptionsContainer.style.display = 'none';
+                        anthonyOptionsContainer.style.display = 'none';
+                        sledOptionsContainer.style.display = 'none';
+                        embraceOptionsContainer.style.display = 'none';
+                        westernOptionsContainer.style.display = 'block';
+                        johnJohnOptionsContainer.style.display = 'none';
+                        mondrianOptionsContainer.style.display = 'none';
+                    }
+                    // 检查是否是john-john型号（需要显示五金选项）
+                    else if (value === 'S035') {
+                        // 启用真皮价格输入
+                        leatherPriceInput.disabled = false;
+                        leatherPriceInput.placeholder = "请输入真皮价格";
+                        
+                        // 显示五金选项
+                        hardwareOptionsContainer.style.display = 'none';
+                        connollyOptionsContainer.style.display = 'none';
+                        aktipoOptionsContainer.style.display = 'none';
+                        pianoOptionsContainer.style.display = 'none';
+                        horizonOptionsContainer.style.display = 'none';
+                        dylanOptionsContainer.style.display = 'none';
+                        anthonyOptionsContainer.style.display = 'none';
+                        sledOptionsContainer.style.display = 'none';
+                        embraceOptionsContainer.style.display = 'none';
+                        westernOptionsContainer.style.display = 'none';
+                        johnJohnOptionsContainer.style.display = 'block';
+                        mondrianOptionsContainer.style.display = 'none';
+                    }
+                    // 检查是否是蒙德里安型号（需要显示五金选项）
+                    else if (value === 'S024') {
+                        // 启用真皮价格输入
+                        leatherPriceInput.disabled = false;
+                        leatherPriceInput.placeholder = "请输入真皮价格";
+                        
+                        // 显示五金选项
+                        hardwareOptionsContainer.style.display = 'none';
+                        connollyOptionsContainer.style.display = 'none';
+                        aktipoOptionsContainer.style.display = 'none';
+                        pianoOptionsContainer.style.display = 'none';
+                        horizonOptionsContainer.style.display = 'none';
+                        dylanOptionsContainer.style.display = 'none';
+                        anthonyOptionsContainer.style.display = 'none';
+                        sledOptionsContainer.style.display = 'none';
+                        embraceOptionsContainer.style.display = 'none';
+                        westernOptionsContainer.style.display = 'none';
+                        johnJohnOptionsContainer.style.display = 'none';
+                        mondrianOptionsContainer.style.display = 'block';
+                    }
+                    else {
+                        // 启用真皮价格输入
+                        leatherPriceInput.disabled = false;
+                        leatherPriceInput.placeholder = "请输入真皮价格";
+                        
+                        // 隐藏五金选项
+                        hardwareOptionsContainer.style.display = 'none';
+                        connollyOptionsContainer.style.display = 'none';
+                        aktipoOptionsContainer.style.display = 'none';
+                        pianoOptionsContainer.style.display = 'none';
+                        horizonOptionsContainer.style.display = 'none';
+                        dylanOptionsContainer.style.display = 'none';
+                        anthonyOptionsContainer.style.display = 'none';
+                        sledOptionsContainer.style.display = 'none';
+                        embraceOptionsContainer.style.display = 'none';
+                        johnJohnOptionsContainer.style.display = 'none';
+                        mondrianOptionsContainer.style.display = 'none';
+                    }
+                } else {
+                    productImage.src = 'https://via.placeholder.com/500x300?text=请选择沙发型号';
+                    hardwareContainer.style.display = 'none';
+                    leatherPriceInput.disabled = false;
+                    leatherPriceInput.placeholder = "请输入真皮价格";
+                    
+                    // 隐藏五金选项
+                    hardwareOptionsContainer.style.display = 'none';
+                    connollyOptionsContainer.style.display = 'none';
+                    aktipoOptionsContainer.style.display = 'none';
+                    pianoOptionsContainer.style.display = 'none';
+                    horizonOptionsContainer.style.display = 'none';
+                    dylanOptionsContainer.style.display = 'none';
+                    anthonyOptionsContainer.style.display = 'none';
+                    sledOptionsContainer.style.display = 'none';
+                    embraceOptionsContainer.style.display = 'none';
+                    johnJohnOptionsContainer.style.display = 'none';
+                    mondrianOptionsContainer.style.display = 'none';
+                }
+                
+                // 重新计算价格
+                calculatePrices();
+            });
+        }
+
+        // 搜索型号功能
+        modelSearch.addEventListener('input', function() {
+            const searchValue = this.value.toLowerCase();
+            let hasVisibleOptions = false;
+            
+            // 显示下拉框
+            modelDropdownContent.style.display = 'block';
+            
+            // 过滤选项
+            for (let i = 0; i < modelOptions.length; i++) {
+                const text = modelOptions[i].textContent.toLowerCase();
+                if (text.includes(searchValue)) {
+                    modelOptions[i].style.display = 'block';
+                    hasVisibleOptions = true;
+                } else {
+                    modelOptions[i].style.display = 'none';
+                }
+            }
+            
+            // 如果没有匹配项，显示提示
+            if (!hasVisibleOptions && searchValue !== '') {
+                // 可以添加一个"无匹配项"的提示
+            }
+        });
+
+        // 点击页面其他地方关闭下拉框
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.search-container')) {
+                modelDropdownContent.style.display = 'none';
+            }
+        });
+
+        // 输入字段变化时重新计算
+        sizeInput.addEventListener('input', calculatePrices);
+        fabricPriceInput.addEventListener('input', calculatePrices);
+        leatherPriceInput.addEventListener('input', calculatePrices);
+        hardwareQuantityInput.addEventListener('input', calculatePrices);
+        steelArmrestQuantityInput.addEventListener('input', calculatePrices);
+        longLegQuantityInput.addEventListener('input', calculatePrices);
+        shortLegQuantityInput.addEventListener('input', calculatePrices);
+        steelHardwareQuantityInput.addEventListener('input', calculatePrices);
+        woodCabinetQuantityInput.addEventListener('input', calculatePrices);
+        wingArmrestQuantityInput.addEventListener('input', calculatePrices);
+        straightHardwareQuantityInput.addEventListener('input', calculatePrices);
+        irregularHardwareQuantityInput.addEventListener('input', calculatePrices);
+        dylanSteelLegQuantityInput.addEventListener('input', calculatePrices);
+        anthonySteelLegQuantityInput.addEventListener('input', calculatePrices);
+        sledSteelLegQuantityInput.addEventListener('input', calculatePrices);
+        duckbillLegQuantityInput.addEventListener('input', calculatePrices);
+        steelBaseQuantityInput.addEventListener('input', calculatePrices);
+        steelBackrestQuantityInput.addEventListener('input', calculatePrices);
+        solidSteelLegQuantityInput.addEventListener('input', calculatePrices);
+        mondrianDuckbillLegQuantityInput.addEventListener('input', calculatePrices);
+        mondrianCabinetQuantityInput.addEventListener('input', calculatePrices);
+        
+        // 五金类型选择变化时重新计算
+        document.getElementById('singleLayerHardware').addEventListener('change', calculatePrices);
+        document.getElementById('doubleLayerHardware').addEventListener('change', calculatePrices);
+        steelArmrestCheckbox.addEventListener('change', function() {
+            // 显示或隐藏钢板扶手数量输入框
+            steelArmrestQuantityContainer.style.display = this.checked ? 'block' : 'none';
+            calculatePrices();
+        });
+        frameEdgeCheckbox.addEventListener('change', calculatePrices);
+        
+        // 阿克提波五金类型选择变化时重新计算
+        document.getElementById('threeSeaterHardware').addEventListener('change', calculatePrices);
+        document.getElementById('singleSeaterHardware').addEventListener('change', calculatePrices);
+        
+        // 钢琴键五金类型选择变化时重新计算
+        document.getElementById('steelHardwareQuantityInput').addEventListener('change', calculatePrices);
+        document.getElementById('woodCabinetQuantityInput').addEventListener('change', calculatePrices);
+        document.getElementById('wingArmrestQuantityInput').addEventListener('change', calculatePrices);
+        document.getElementById('straightHardwareQuantityInput').addEventListener('change', calculatePrices);
+        document.getElementById('irregularHardwareQuantityInput').addEventListener('change', calculatePrices);
+        document.getElementById('dylanSteelLegQuantityInput').addEventListener('change', calculatePrices);
+        document.getElementById('anthonySteelLegQuantityInput').addEventListener('change', calculatePrices);
+        document.getElementById('sledSteelLegQuantityInput').addEventListener('change', calculatePrices);
+        document.getElementById('duckbillLegQuantityInput').addEventListener('change', calculatePrices);
+        document.getElementById('steelBaseQuantityInput').addEventListener('change', calculatePrices);
+        document.getElementById('steelBackrestQuantityInput').addEventListener('change', calculatePrices);
+        document.getElementById('solidSteelLegQuantityInput').addEventListener('change', calculatePrices);
+        document.getElementById('mondrianDuckbillLegQuantityInput').addEventListener('change', calculatePrices);
+        document.getElementById('mondrianCabinetQuantityInput').addEventListener('change', calculatePrices);
+        
+        // 显示/隐藏型号系数信息
+        toggleModelInfo.addEventListener('click', function() {
+            if (modelInfoSection.style.display === 'none') {
+                modelInfoSection.style.display = 'block';
+                this.textContent = '隐藏型号系数信息';
+            } else {
+                modelInfoSection.style.display = 'none';
+                this.textContent = '显示型号系数信息';
+            }
+        });
+
+        // 页面加载时初始化
+        window.addEventListener('DOMContentLoaded', initializePage);
+
+        // 复制价格文本的函数
+        function copyPriceText(type) {
+            const modelData = sofaModels[currentModelValue];
+            if (!modelData) return;
+
+            // 将尺寸从厘米转换为米
+            const sizeInMeters = (parseFloat(sizeInput.value) / 100).toFixed(2);
+            
+            // 获取销售报价
+            const fabricSalesPrice = fabricSalesResult.textContent.replace(' 元', '');
+            const contactLeatherSalesPrice = contactLeatherSalesResult.textContent.replace(' 元', '');
+            const fullLeatherSalesPrice = fullLeatherSalesResult.textContent.replace(' 元', '');
+            
+            // 根据类型生成文本
+            let text = '';
+            switch(type) {
+                case 'fabric':
+                    text = `${modelData.name} ${sizeInMeters}米 布艺 ${fabricSalesPrice}元`;
+                    break;
+                case 'contactLeather':
+                    text = `${modelData.name} ${sizeInMeters}米 接触面真皮 ${contactLeatherSalesPrice}元`;
+                    break;
+                case 'fullLeather':
+                    text = `${modelData.name} ${sizeInMeters}米 全皮 ${fullLeatherSalesPrice}元`;
+                    break;
+            }
+
+            // 使用 Clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showCopySuccess(type);
+                }).catch((err) => {
+                    console.error('复制失败:', err);
+                    fallbackCopy(text, type);
+                });
+            } else {
+                fallbackCopy(text, type);
+            }
+        }
+
+        // 显示复制成功的反馈
+        function showCopySuccess(type) {
+            const button = document.querySelector(`.copy-button[data-type="${type}"]`);
+            if (button) {
+                button.classList.add('copied');
+                button.textContent = '已复制，直接发客户';
+                
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    button.textContent = '复制';
+                }, 2000);
+            }
+        }
+
+        // 降级复制方案
+        function fallbackCopy(text, type) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            textarea.style.top = '0';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                showCopySuccess(type);
+            } catch (err) {
+                console.error('复制失败:', err);
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // 价格计算函数
+        function calculatePrices() {
+            // 重置错误信息
+            resetErrors();
+
+            // 获取输入值
+            const modelValue = currentModelValue;
+            const sizeValue = sizeInput.value.trim();
+            const fabricPriceValue = fabricPriceInput.value.trim();
+            const leatherPriceValue = leatherPriceInput.value.trim();
+
+            // 验证输入
+            if (!validateInputs(modelValue, sizeValue)) {
+                clearResults();
+                return;
+            }
+
+            // 获取销售报价系数
+            const coefficient = parseFloat(salesCoefficient.value) || 1.0;
+
+            // 转换为数字
+            const size = parseFloat(sizeValue);
+            const fabricPrice = fabricPriceValue ? parseFloat(fabricPriceValue) : null;
+            const leatherPrice = leatherPriceValue ? parseFloat(leatherPriceValue) : null;
+
+            // 获取沙发型号的计算系数
+            const modelData = sofaModels[modelValue];
+            if (!modelData) return;
+
+            // 计算布的用量
+            const fabricUsage = calculateFabricUsage(modelValue, size);
+
+            // 计算布艺差价
+            const fabricPriceDiff = fabricPrice !== null ? fabricUsage * (fabricPrice - 30) : null;
+
+            // 计算基础价格
+            let { fabricTotalPrice, contactLeatherTotalPrice, fullLeatherTotalPrice } = 
+                calculateBasePrices(modelValue, size, fabricPriceDiff, fabricUsage, leatherPrice, modelData);
+
+            // 计算五金价格
+            const hardwareTotalPrice = calculateHardwarePrice(modelValue);
+
+            // 添加五金价格到总价
+            if (fabricPrice !== null) {
+                fabricTotalPrice += hardwareTotalPrice;
+            }
+            if (leatherPrice !== null) {
+                contactLeatherTotalPrice += hardwareTotalPrice;
+                fullLeatherTotalPrice += hardwareTotalPrice;
+            }
+
+            // 计算销售报价
+            const fabricSalesPrice = fabricPrice !== null ? fabricTotalPrice * coefficient : 0;
+            const contactLeatherSalesPrice = leatherPrice !== null ? contactLeatherTotalPrice * coefficient : 0;
+            const fullLeatherSalesPrice = leatherPrice !== null ? fullLeatherTotalPrice * coefficient : 0;
+
+            // 更新显示
+            updatePriceDisplays({
+                fabricTotalPrice: fabricPrice !== null ? fabricTotalPrice : 0,
+                contactLeatherTotalPrice: leatherPrice !== null ? contactLeatherTotalPrice : 0,
+                fullLeatherTotalPrice: leatherPrice !== null ? fullLeatherTotalPrice : 0,
+                hardwareTotalPrice,
+                fabricUsage,
+                fabricSalesPrice,
+                contactLeatherSalesPrice,
+                fullLeatherSalesPrice
+            });
+
+            // 更新显示/隐藏状态
+            updateVisibility(modelValue, leatherPriceValue);
+
+            // 输出调试信息
+            logDebugInfo(modelData, size, fabricPrice, leatherPrice, coefficient, 
+                fabricTotalPrice, fabricSalesPrice, contactLeatherTotalPrice, 
+                contactLeatherSalesPrice, fullLeatherTotalPrice, fullLeatherSalesPrice, 
+                hardwareTotalPrice);
+        }
+
+        // 辅助函数
+        function resetErrors() {
+            const errorElements = document.querySelectorAll('.error-message');
+            errorElements.forEach(element => element.style.display = 'none');
+        }
+
+        function validateInputs(modelValue, sizeValue) {
+            let isValid = true;
+
+            if (!modelValue) {
+                modelError.style.display = 'block';
+                isValid = false;
+            }
+
+            if (!sizeValue || isNaN(sizeValue) || parseFloat(sizeValue) <= 0) {
+                sizeError.style.display = 'block';
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function calculateFabricUsage(modelValue, size) {
+            if (modelValue === 'S014') return (size + 45) * 0.055; // 花瓣（160小贵妃）
+            if (modelValue === 'S015') return (size + 65) * 0.055; // 花瓣（185大贵妃）
+            if (modelValue === 'S008') return size * 0.075; // 云沙发
+            return size * 0.055; // 其他型号
+        }
+
+        function calculateBasePrices(modelValue, size, fabricPriceDiff, fabricUsage, leatherPrice, modelData) {
+            let fabricTotalPrice = 0;
+            let contactLeatherTotalPrice = 0;
+            let fullLeatherTotalPrice = 0;
+
+            if (modelValue === 'S014' || modelValue === 'S015') {
+                // 特殊型号价格计算
+                const addition = modelValue === 'S014' ? 45 : 65;
+                if (fabricPriceDiff !== null) {
+                    fabricTotalPrice = (size + addition) * modelData.fabricFactor + fabricPriceDiff;
+                }
+            } else {
+                // 标准型号价格计算
+                if (fabricPriceDiff !== null) {
+                    fabricTotalPrice = size * modelData.fabricFactor + fabricPriceDiff;
+                }
+                if (leatherPrice) {
+                    contactLeatherTotalPrice = size * modelData.contactLeatherFactor + fabricUsage * 18 * 0.7 * leatherPrice;
+                    fullLeatherTotalPrice = size * modelData.fullLeatherFactor + fabricUsage * 18 * leatherPrice;
+                }
+            }
+
+            return { fabricTotalPrice, contactLeatherTotalPrice, fullLeatherTotalPrice };
+        }
+
+        function updatePriceDisplays(prices) {
+            // 基础价格保留两位小数
+            updatePriceDisplay(fabricResult, prices.fabricTotalPrice.toFixed(2) + ' 元');
+            updatePriceDisplay(contactLeatherResult, prices.contactLeatherTotalPrice.toFixed(2) + ' 元');
+            updatePriceDisplay(fullLeatherResult, prices.fullLeatherTotalPrice.toFixed(2) + ' 元');
+            updatePriceDisplay(hardwareResult, prices.hardwareTotalPrice.toFixed(2) + ' 元');
+            updatePriceDisplay(fabricUsageResult, prices.fabricUsage.toFixed(2) + ' 平方米');
+
+            // 销售报价向上取整到最近的10
+            const roundToTen = (num) => Math.ceil(num / 10) * 10;
+            updatePriceDisplay(fabricSalesResult, roundToTen(prices.fabricSalesPrice) + ' 元');
+            updatePriceDisplay(contactLeatherSalesResult, roundToTen(prices.contactLeatherSalesPrice) + ' 元');
+            updatePriceDisplay(fullLeatherSalesResult, roundToTen(prices.fullLeatherSalesPrice) + ' 元');
+        }
+
+        function updateVisibility(modelValue, leatherPriceValue) {
+            const isSpecialModel = modelValue === 'S014' || modelValue === 'S015';
+            const hasLeatherPrice = leatherPriceValue && !isNaN(leatherPriceValue) && parseFloat(leatherPriceValue) > 0;
+
+            // 更新显示/隐藏状态
+            document.querySelectorAll('.price-item.primary')[1].style.display = 
+                (isSpecialModel || !hasLeatherPrice) ? 'none' : 'flex';
+            document.querySelectorAll('.price-item.primary')[2].style.display = 
+                (isSpecialModel || !hasLeatherPrice) ? 'none' : 'flex';
+            document.querySelectorAll('.sales-price-item')[1].style.display = 
+                (isSpecialModel || !hasLeatherPrice) ? 'none' : 'flex';
+            document.querySelectorAll('.sales-price-item')[2].style.display = 
+                (isSpecialModel || !hasLeatherPrice) ? 'none' : 'flex';
+        }
+
+        function logDebugInfo(modelData, size, fabricPrice, leatherPrice, coefficient, ...prices) {
+            console.log('计算详情:', {
+                型号: modelData.name,
+                尺寸: size,
+                布料价格: fabricPrice,
+                真皮价格: leatherPrice,
+                销售报价系数: coefficient,
+                布艺价格: prices[0],
+                布艺销售报价: prices[1],
+                接触面真皮价格: prices[2],
+                接触面真皮销售报价: prices[3],
+                全皮价格: prices[4],
+                全皮销售报价: prices[5],
+                五金配件价格: prices[6]
+            });
+        }
+
+        // 初始化页面
+        function initializePage() {
+            // 重置所有输入字段
+            sizeInput.value = '';
+            fabricPriceInput.value = '';
+            leatherPriceInput.value = '';
+            salesCoefficient.value = '1.0';
+            
+            // 重置所有错误信息
+            resetErrors();
+            
+            // 清空结果
+            clearResults();
+            
+            // 确保结果区域可见
+            document.querySelector('.results').style.display = 'block';
+            
+            // 添加事件监听
+            sizeInput.addEventListener('input', calculatePrices);
+            fabricPriceInput.addEventListener('input', calculatePrices);
+            leatherPriceInput.addEventListener('input', calculatePrices);
+            salesCoefficient.addEventListener('input', calculatePrices);
+            
+            // 为复制按钮添加事件监听
+            document.querySelectorAll('.copy-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const type = this.getAttribute('data-type');
+                    copyPriceText(type);
+                });
+            });
+            
+            console.log('沙发报价工具已初始化');
+        }
+
+        function clearResults() {
+            // 清空所有价格显示
+            fabricResult.textContent = '0.00 元';
+            contactLeatherResult.textContent = '0.00 元';
+            fullLeatherResult.textContent = '0.00 元';
+            hardwareResult.textContent = '0.00 元';
+            fabricUsageResult.textContent = '0.00 平方米';
+            fabricSalesResult.textContent = '0.00 元';
+            contactLeatherSalesResult.textContent = '0.00 元';
+            fullLeatherSalesResult.textContent = '0.00 元';
+        }
+
+        function handleModelChange() {
+            // 获取当前选中的型号
+            currentModelValue = modelSelect.value;
+            
+            // 重置所有五金选项容器的显示状态
+            document.querySelectorAll('[id$="OptionsContainer"]').forEach(container => {
+                container.style.display = 'none';
+            });
+            
+            // 显示对应型号的五金选项
+            const optionsContainer = document.getElementById(`${currentModelValue}OptionsContainer`);
+            if (optionsContainer) {
+                optionsContainer.style.display = 'block';
+            }
+            
+            // 重新计算价格
+            calculatePrices();
+        }
+
+        // 添加价格更新动画函数
+        function updatePriceDisplay(element, value) {
+            // 移除之前的动画类
+            element.classList.remove('updated');
+            
+            // 更新价格值
+            element.textContent = value;
+            
+            // 触发重绘
+            void element.offsetWidth;
+            
+            // 添加动画类
+            element.classList.add('updated');
+        }
+
+        function calculateHardwarePrice(modelValue) {
+            let hardwareTotalPrice = 0;
+            
+            // 获取沙发型号的数据
+            const modelData = sofaModels[modelValue];
+            if (!modelData) return 0;
+            
+            // 特殊型号的五金价格计算
+            switch(modelValue) {
+                case 'S016': // 劳伦斯
+                    const singleLayerHardware = document.getElementById('singleLayerHardware');
+                    const isHardwareSingleLayer = singleLayerHardware.checked;
+                    const hardwareQuantity = parseInt(hardwareQuantityInput.value) || 0;
+                    hardwareTotalPrice = (isHardwareSingleLayer ? 250 : 400) * hardwareQuantity;
+                    break;
+                    
+                case 'S017': // 康纳利
+                    const steelArmrestQuantity = parseInt(steelArmrestQuantityInput.value) || 0;
+                    const longLegQuantity = parseInt(longLegQuantityInput.value) || 0;
+                    const shortLegQuantity = parseInt(shortLegQuantityInput.value) || 0;
+                    
+                    hardwareTotalPrice = (steelArmrestCheckbox.checked ? 700 * steelArmrestQuantity : 0) +
+                                       (frameEdgeCheckbox.checked ? 300 : 0) +
+                                       (180 * longLegQuantity) +
+                                       (50 * shortLegQuantity);
+                    break;
+                    
+                case 'S020': // 阿克提波
+                    const isThreeSeater = document.getElementById('threeSeaterHardware').checked;
+                    hardwareTotalPrice = isThreeSeater ? 1200 : 650;
+                    break;
+                    
+                case 'S021': // 钢琴键
+                    const steelHardwareQuantity = parseInt(steelHardwareQuantityInput.value) || 0;
+                    const woodCabinetQuantity = parseInt(woodCabinetQuantityInput.value) || 0;
+                    const wingArmrestQuantity = parseInt(wingArmrestQuantityInput.value) || 0;
+                    
+                    hardwareTotalPrice = (250 * steelHardwareQuantity) +
+                                       (450 * woodCabinetQuantity) +
+                                       (450 * wingArmrestQuantity);
+                    break;
+                    
+                case 'S025': // 地平线
+                    const straightHardwareQuantity = parseInt(straightHardwareQuantityInput.value) || 0;
+                    const irregularHardwareQuantity = parseInt(irregularHardwareQuantityInput.value) || 0;
+                    
+                    hardwareTotalPrice = (300 * straightHardwareQuantity) +
+                                       (420 * irregularHardwareQuantity);
+                    break;
+                    
+                case 'S026': // 迪兰
+                    const dylanSteelLegQuantity = parseInt(dylanSteelLegQuantityInput.value) || 0;
+                    hardwareTotalPrice = 100 * dylanSteelLegQuantity;
+                    break;
+                    
+                case 'S029': // 安东尼
+                    const anthonySteelLegQuantity = parseInt(anthonySteelLegQuantityInput.value) || 0;
+                    hardwareTotalPrice = 150 * anthonySteelLegQuantity;
+                    break;
+                    
+                case 'S030': // 雪橇
+                    const sledSteelLegQuantity = parseInt(sledSteelLegQuantityInput.value) || 0;
+                    hardwareTotalPrice = 100 * sledSteelLegQuantity;
+                    break;
+                    
+                case 'S031': // 怀抱
+                    const duckbillLegQuantity = parseInt(duckbillLegQuantityInput.value) || 0;
+                    hardwareTotalPrice = 25 * duckbillLegQuantity;
+                    break;
+                    
+                case 'S034': // 西部
+                    const steelBaseQuantity = parseInt(steelBaseQuantityInput.value) || 0;
+                    const steelBackrestQuantity = parseInt(steelBackrestQuantityInput.value) || 0;
+                    
+                    hardwareTotalPrice = (200 * steelBaseQuantity) +
+                                       (300 * steelBackrestQuantity);
+                    break;
+                    
+                case 'S035': // John-John
+                    const solidSteelLegQuantity = parseInt(solidSteelLegQuantityInput.value) || 0;
+                    hardwareTotalPrice = 50 * solidSteelLegQuantity;
+                    break;
+                    
+                case 'S024': // 蒙德里安
+                    const mondrianDuckbillLegQuantity = parseInt(mondrianDuckbillLegQuantityInput.value) || 0;
+                    const mondrianCabinetQuantity = parseInt(mondrianCabinetQuantityInput.value) || 0;
+                    
+                    hardwareTotalPrice = (25 * mondrianDuckbillLegQuantity) +
+                                       (450 * mondrianCabinetQuantity);
+                    break;
+                    
+                default:
+                    hardwareTotalPrice = modelData.hardwarePrice || 0;
+            }
+            
+            return hardwareTotalPrice;
+        }
+
+        // 修改销售报价系数的事件监听，实现实时计算
+        salesCoefficient.addEventListener('input', function() {
+            const coefficient = parseFloat(this.value) || 1.0;
+            
+            // 获取基础价格
+            const fabricPrice = parseFloat(fabricResult.textContent) || 0;
+            const contactLeatherPrice = parseFloat(contactLeatherResult.textContent) || 0;
+            const fullLeatherPrice = parseFloat(fullLeatherResult.textContent) || 0;
+            
+            // 实时更新销售报价
+            updatePriceDisplay(fabricSalesResult, (fabricPrice * coefficient).toFixed(2) + ' 元');
+            updatePriceDisplay(contactLeatherSalesResult, (contactLeatherPrice * coefficient).toFixed(2) + ' 元');
+            updatePriceDisplay(fullLeatherSalesResult, (fullLeatherPrice * coefficient).toFixed(2) + ' 元');
+        });
+    </script>
+</body>
+</html> 
+</html> 
