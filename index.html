@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>宝丽斯沙发报价工具</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>沙发报价工具</title>
     <style>
         /* 基础样式 */
         * {
@@ -363,6 +363,8 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 20px;
+            margin: 0;
+            border-bottom: 1px solid #f2f2f2;
             background-color: white;
         }
 
@@ -408,7 +410,7 @@
             color: #34c759;
         }
 
-        /* 销售报价系数输入框样式 */
+        /* 销售报价系数滑动条样式 */
         .sales-coefficient {
             margin: 20px 0;
             padding: 15px;
@@ -421,15 +423,113 @@
             font-size: 14px;
             color: #1d1d1f;
             margin-bottom: 8px;
+            display: block;
         }
 
-        .sales-coefficient input {
-            width: 120px;
-            padding: 8px;
-            border: 1px solid #d2d2d7;
-            border-radius: 6px;
-            font-size: 14px;
-            color: #1d1d1f;
+        .sales-coefficient input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            border-radius: 2px;
+            background: #d2d2d7;
+            outline: none;
+        }
+
+        .sales-coefficient input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #0066cc;
+            cursor: pointer;
+            transition: background .15s ease-in-out;
+        }
+
+        .sales-coefficient input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border: 0;
+            border-radius: 50%;
+            background: #0066cc;
+            cursor: pointer;
+            transition: background .15s ease-in-out;
+        }
+
+        .sales-coefficient input[type="range"]::-webkit-slider-thumb:hover {
+            background: #0077ed;
+        }
+
+        .sales-coefficient input[type="range"]:active::-webkit-slider-thumb {
+            background: #0077ed;
+        }
+
+        /* 数字输入框样式调整 */
+        input[type="number"] {
+            -moz-appearance: textfield;
+            -webkit-appearance: none;
+            margin: 0;
+            padding: 12px;
+            font-size: 16px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 767px) {
+            input[type="number"] {
+                padding: 14px;
+                font-size: 18px;
+                height: 48px;
+                line-height: 1.2;
+            }
+            
+            .form-group label {
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+            
+            /* 五金配件数量输入框容器样式 */
+            [id$="QuantityContainer"] {
+                margin-bottom: 20px;
+            }
+            
+            /* 五金配件数量输入框样式 */
+            [id$="QuantityInput"] {
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+        }
+
+        /* 响应式布局优化 */
+        @media (max-width: 767px) {
+            .sales-coefficient {
+                padding: 12px;
+            }
+            
+            .sales-coefficient input[type="range"] {
+                height: 6px;
+            }
+            
+            .sales-coefficient input[type="range"]::-webkit-slider-thumb {
+                width: 24px;
+                height: 24px;
+            }
+            
+            .sales-coefficient input[type="range"]::-moz-range-thumb {
+                width: 24px;
+                height: 24px;
+            }
         }
 
         /* 销售报价样式 */
@@ -440,21 +540,21 @@
             padding: 12px 20px;
             margin: 0;
             border-bottom: 1px solid #f2f2f2;
-            background-color: #fcfcfc;
-            font-size: 14px;
-        }
-
-        .sales-price-item:hover {
-            background-color: #f9f9f9;
+            background-color: white;
         }
 
         .sales-price-item span:first-child {
+            font-size: 14px;
             color: #86868b;
+            flex: 1;
         }
 
         .sales-price-item span:nth-child(2) {
+            font-size: 14px;
             color: #1d1d1f;
-            margin-right: 10px;
+            min-width: 100px;
+            text-align: right;
+            margin-right: 15px;
         }
 
         .copy-button {
@@ -466,6 +566,8 @@
             color: #0066cc;
             cursor: pointer;
             transition: all 0.2s ease;
+            min-width: 50px;
+            text-align: center;
         }
 
         .copy-button:hover {
@@ -477,11 +579,34 @@
             background-color: #e8e8ed;
             color: #34c759;
         }
+        
+        /* 水印样式 */
+        .watermark {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.08;
+            display: flex;
+            flex-wrap: wrap;
+            overflow: hidden;
+        }
+        
+        .watermark-item {
+            padding: 20px;
+            transform: rotate(-30deg);
+            font-size: 16px;
+            color: #000;
+            user-select: none;
+        }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false">
     <div class="container">
-        <h1>沙发产品报价工具</h1>
+        <h1>沙发报价工具</h1>
         
         <div class="product-display">
             <img id="productImage" src="https://via.placeholder.com/500x300?text=请选择沙发型号" alt="沙发产品图片" class="product-image">
@@ -561,8 +686,8 @@
 
                 <!-- 修改销售报价系数样式和位置 -->
                 <div class="sales-coefficient">
-                    <label for="salesCoefficient">销售报价系数：</label>
-                    <input type="number" id="salesCoefficient" step="0.01" min="0" value="1.0" placeholder="请输入系数">
+                    <label for="salesCoefficient">销售报价系数：<span id="salesCoefficientValue">1.00</span></label>
+                    <input type="range" id="salesCoefficient" min="1" max="2" step="0.01" value="1.00">
                 </div>
                 
                 <!-- 劳伦斯型号的五金选择 -->
@@ -579,7 +704,7 @@
                         </div>
                     </div>
                     <label for="hardwareQuantityInput">五金数量:</label>
-                    <input type="number" id="hardwareQuantityInput" min="1" value="1" placeholder="请输入数量">
+                    <input type="number" id="hardwareQuantityInput" min="0" value="1" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                     <div id="hardwareQuantityError" class="error-message">请输入有效的数量</div>
                 </div>
                 
@@ -595,7 +720,7 @@
                         </div>
                         <div id="steelArmrestQuantityContainer" style="display: none;">
                             <label for="steelArmrestQuantityInput">数量:</label>
-                            <input type="number" id="steelArmrestQuantityInput" min="1" value="1" placeholder="请输入数量">
+                            <input type="number" id="steelArmrestQuantityInput" min="1" value="1" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                             <div id="steelArmrestQuantityError" class="error-message">请输入有效的数量</div>
                         </div>
                     </div>
@@ -611,14 +736,14 @@
                     <!-- 不锈钢长脚选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="longLegQuantityInput">不锈钢长脚 (180元/个):</label>
-                        <input type="number" id="longLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="longLegQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="longLegQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                     
                     <!-- 不锈钢短脚选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="shortLegQuantityInput">不锈钢短脚 (50元/个):</label>
-                        <input type="number" id="shortLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="shortLegQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="shortLegQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                 </div>
@@ -645,21 +770,21 @@
                     <!-- 不锈钢五金选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="steelHardwareQuantityInput">不锈钢五金 (250元/个):</label>
-                        <input type="number" id="steelHardwareQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="steelHardwareQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="steelHardwareQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                     
                     <!-- 木柜选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="woodCabinetQuantityInput">木柜 (450元/个):</label>
-                        <input type="number" id="woodCabinetQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="woodCabinetQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="woodCabinetQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                     
                     <!-- 飞翼扶手选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="wingArmrestQuantityInput">飞翼扶手 (450元/个):</label>
-                        <input type="number" id="wingArmrestQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="wingArmrestQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="wingArmrestQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                 </div>
@@ -671,14 +796,14 @@
                     <!-- 直排五金选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="straightHardwareQuantityInput">直排五金 (300元/个):</label>
-                        <input type="number" id="straightHardwareQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="straightHardwareQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="straightHardwareQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                     
                     <!-- 异形五金选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="irregularHardwareQuantityInput">异形五金 (420元/个):</label>
-                        <input type="number" id="irregularHardwareQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="irregularHardwareQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="irregularHardwareQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                 </div>
@@ -690,7 +815,7 @@
                     <!-- 不锈钢五金脚选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="dylanSteelLegQuantityInput">不锈钢五金脚 (100元/个):</label>
-                        <input type="number" id="dylanSteelLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="dylanSteelLegQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="dylanSteelLegQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                 </div>
@@ -702,7 +827,7 @@
                     <!-- 不锈钢五金脚选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="anthonySteelLegQuantityInput">不锈钢五金脚 (150元/个):</label>
-                        <input type="number" id="anthonySteelLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="anthonySteelLegQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="anthonySteelLegQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                 </div>
@@ -714,7 +839,7 @@
                     <!-- 不锈钢五金脚选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="sledSteelLegQuantityInput">不锈钢五金脚 (100元/个):</label>
-                        <input type="number" id="sledSteelLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="sledSteelLegQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="sledSteelLegQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                 </div>
@@ -726,7 +851,7 @@
                     <!-- 不锈钢鸭嘴脚选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="duckbillLegQuantityInput">不锈钢鸭嘴脚 (25元/个):</label>
-                        <input type="number" id="duckbillLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="duckbillLegQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="duckbillLegQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                 </div>
@@ -738,14 +863,14 @@
                     <!-- 不锈钢底座选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="steelBaseQuantityInput">不锈钢底座 (200元/个):</label>
-                        <input type="number" id="steelBaseQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="steelBaseQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="steelBaseQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                     
                     <!-- 不锈钢油边靠背选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="steelBackrestQuantityInput">不锈钢油边靠背 (300元/个):</label>
-                        <input type="number" id="steelBackrestQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="steelBackrestQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="steelBackrestQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                 </div>
@@ -757,7 +882,7 @@
                     <!-- 实心不锈钢脚选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="solidSteelLegQuantityInput">实心不锈钢脚 (50元/个):</label>
-                        <input type="number" id="solidSteelLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="solidSteelLegQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="solidSteelLegQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                 </div>
@@ -769,14 +894,14 @@
                     <!-- 实心不锈钢鸭嘴脚选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="mondrianDuckbillLegQuantityInput">实心不锈钢鸭嘴脚 (25元/个):</label>
-                        <input type="number" id="mondrianDuckbillLegQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="mondrianDuckbillLegQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="mondrianDuckbillLegQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                     
                     <!-- 木柜选项 -->
                     <div style="margin-bottom: 15px;">
                         <label for="mondrianCabinetQuantityInput">木柜 (450元/个):</label>
-                        <input type="number" id="mondrianCabinetQuantityInput" min="0" value="0" placeholder="请输入数量">
+                        <input type="number" id="mondrianCabinetQuantityInput" min="0" value="0" placeholder="请输入数量" inputmode="numeric" pattern="[0-9]*">
                         <div id="mondrianCabinetQuantityError" class="error-message">请输入有效的数量</div>
                     </div>
                 </div>
@@ -1077,7 +1202,7 @@
                 <span id="fullLeatherSalesResult">0.00 元</span>
                 <button class="copy-button" data-type="fullLeather">复制</button>
             </div>
-            <div class="price-item primary" id="hardwareContainer" style="display: none;">
+            <div class="price-item secondary" id="hardwareContainer" style="display: none;">
                 <span>五金配件附加费</span>
                 <span id="hardwareResult">0.00 元</span>
             </div>
@@ -1085,12 +1210,15 @@
                 <span>布艺差价</span>
                 <span id="fabricPriceDiffResult">0.00 元</span>
             </div>
-            <div class="price-item secondary" style="display: none;">
+            <div class="price-item secondary">
                 <span>布的用量</span>
-                <span id="fabricUsageResult">0.00 平方米</span>
+                <span id="fabricUsageResult">0.00 米</span>
             </div>
         </div>
     </div>
+
+    <!-- 添加水印容器 -->
+    <div class="watermark" id="watermark"></div>
 
     <script>
         // 沙发型号数据和计算系数
@@ -1100,7 +1228,7 @@
                 contactLeatherFactor: 8.5, 
                 fullLeatherFactor: 8.5, 
                 hardwarePrice: 0,
-                image: 'doufu.png',
+                image: 'daxiagnerduo.png',
                 hasHardware: false,
                 name: '大象耳朵'
             },
@@ -1109,7 +1237,7 @@
                 contactLeatherFactor: 9.5, 
                 fullLeatherFactor: 9.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=云朵沙发',
+                image: 'yunduo.png',
                 hasHardware: false,
                 name: '云朵'
             },
@@ -1118,7 +1246,7 @@
                 contactLeatherFactor: 9.5, 
                 fullLeatherFactor: 9.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=大马士革沙发',
+                image: 'damashige.png',
                 hasHardware: false,
                 name: '大马士革'
             },
@@ -1127,7 +1255,7 @@
                 contactLeatherFactor: 9.0, 
                 fullLeatherFactor: 9.0, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=吐司沙发',
+                image: 'tusi.png',
                 hasHardware: false,
                 name: '吐司'
             },
@@ -1136,7 +1264,7 @@
                 contactLeatherFactor: 7.5, 
                 fullLeatherFactor: 7.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=豆腐块沙发',
+                image: 'doufukuai.png',
                 hasHardware: false,
                 name: '豆腐块'
             },
@@ -1145,7 +1273,7 @@
                 contactLeatherFactor: 10.0, 
                 fullLeatherFactor: 10.0, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=面包沙发',
+                image: 'mianbao.png',
                 hasHardware: false,
                 name: '面包'
             },
@@ -1154,7 +1282,7 @@
                 contactLeatherFactor: 10.5, 
                 fullLeatherFactor: 10.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=大黑牛沙发',
+                image: 'daheiniu.png',
                 hasHardware: false,
                 name: '大黑牛'
             },
@@ -1172,7 +1300,7 @@
                 contactLeatherFactor: 9.0, 
                 fullLeatherFactor: 9.0, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=布雷泽沙发',
+                image: 'buleize.png',
                 hasHardware: false,
                 name: '布雷泽'
             },
@@ -1181,7 +1309,7 @@
                 contactLeatherFactor: 10.5, 
                 fullLeatherFactor: 10.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=棉花糖沙发',
+                image: 'mianhuatang.png',
                 hasHardware: false,
                 name: '棉花糖'
             },
@@ -1190,7 +1318,7 @@
                 contactLeatherFactor: 9.5, 
                 fullLeatherFactor: 9.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=香奈儿沙发',
+                image: 'xiangnaier.png',
                 hasHardware: false,
                 name: '香奈儿'
             },
@@ -1199,7 +1327,7 @@
                 contactLeatherFactor: 8.0, 
                 fullLeatherFactor: 8.0, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=布达佩斯（直排）沙发',
+                image: 'budapeisi.png',
                 hasHardware: false,
                 name: '布达佩斯（直排）'
             },
@@ -1208,7 +1336,7 @@
                 contactLeatherFactor: 8.5, 
                 fullLeatherFactor: 8.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=布达佩斯（贵妃组合）沙发',
+                image: 'budapeisi.png',
                 hasHardware: false,
                 name: '布达佩斯（贵妃组合）'
             },
@@ -1217,7 +1345,7 @@
                 contactLeatherFactor: 10.5, 
                 fullLeatherFactor: 10.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=花瓣（160小贵妃）沙发',
+                image: 'huaban.png',
                 hasHardware: false,
                 name: '花瓣（160小贵妃）'
             },
@@ -1226,7 +1354,7 @@
                 contactLeatherFactor: 10.5, 
                 fullLeatherFactor: 10.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=花瓣（185大贵妃）沙发',
+                image: 'huaban.png',
                 hasHardware: false,
                 name: '花瓣（185大贵妃）'
             },
@@ -1235,7 +1363,7 @@
                 contactLeatherFactor: 9.5, 
                 fullLeatherFactor: 9.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=劳伦斯沙发',
+                image: 'laolunsi.png',
                 hasHardware: true,
                 name: '劳伦斯',
                 specialHardware: true
@@ -1245,7 +1373,7 @@
                 contactLeatherFactor: 8.5, 
                 fullLeatherFactor: 8.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=康纳利沙发',
+                image: 'kangnali.png',
                 hasHardware: true,
                 name: '康纳利',
                 specialHardware: true
@@ -1255,7 +1383,7 @@
                 contactLeatherFactor: 8.0, 
                 fullLeatherFactor: 8.0, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=锐驰沙发',
+                image: 'ruichi.png',
                 hasHardware: false,
                 name: '锐驰'
             },
@@ -1264,7 +1392,7 @@
                 contactLeatherFactor: 10.5, 
                 fullLeatherFactor: 10.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=泡芙沙发',
+                image: 'paofu.png',
                 hasHardware: false,
                 name: '泡芙'
             },
@@ -1273,7 +1401,7 @@
                 contactLeatherFactor: 8.5, 
                 fullLeatherFactor: 8.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=阿克提波沙发',
+                image: 'aketibo.png',
                 hasHardware: true,
                 name: '阿克提波',
                 specialHardware: true
@@ -1283,7 +1411,7 @@
                 contactLeatherFactor: 9.5, 
                 fullLeatherFactor: 9.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=钢琴键沙发',
+                image: 'gangqinjian.png',
                 hasHardware: true,
                 name: '钢琴键',
                 specialHardware: true
@@ -1293,7 +1421,7 @@
                 contactLeatherFactor: 10.5, 
                 fullLeatherFactor: 10.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=迈阿密沙发',
+                image: 'maiami.png',
                 hasHardware: false,
                 name: '迈阿密'
             },
@@ -1302,7 +1430,7 @@
                 contactLeatherFactor: 10.5, 
                 fullLeatherFactor: 10.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=格兰德沙发',
+                image: 'gelande.png',
                 hasHardware: false,
                 name: '格兰德'
             },
@@ -1311,7 +1439,7 @@
                 contactLeatherFactor: 9.5, 
                 fullLeatherFactor: 9.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=蒙德里安沙发',
+                image: 'mengdelian.png',
                 hasHardware: true,
                 name: '蒙德里安',
                 specialHardware: true
@@ -1321,7 +1449,7 @@
                 contactLeatherFactor: 10.0, 
                 fullLeatherFactor: 10.0, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=地平线沙发',
+                image: 'dipingxian.png',
                 hasHardware: true,
                 name: '地平线',
                 specialHardware: true
@@ -1331,7 +1459,7 @@
                 contactLeatherFactor: 10.5, 
                 fullLeatherFactor: 10.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=迪兰沙发',
+                image: 'dilan.png',
                 hasHardware: true,
                 name: '迪兰',
                 specialHardware: true
@@ -1341,7 +1469,7 @@
                 contactLeatherFactor: 10.5, 
                 fullLeatherFactor: 10.5, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=像素沙发',
+                image: 'xiangsu.png',
                 hasHardware: false,
                 name: '像素'
             },
@@ -1350,7 +1478,7 @@
                 contactLeatherFactor: 12.0,
                 fullLeatherFactor: 12.0, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=马拉伦加沙发',
+                image: 'malalunjia.png',
                 hasHardware: false,
                 name: '马拉伦加'
             },
@@ -1359,7 +1487,7 @@
                 contactLeatherFactor: 12.0, 
                 fullLeatherFactor: 12.0, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=安东尼沙发',
+                image: 'andongni.png',
                 hasHardware: true,
                 name: '安东尼',
                 specialHardware: true
@@ -1369,7 +1497,7 @@
                 contactLeatherFactor: 12.0, 
                 fullLeatherFactor: 12.0, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=雪橇沙发',
+                image: 'xueqiao.png',
                 hasHardware: true,
                 name: '雪橇',
                 specialHardware: true
@@ -1398,7 +1526,7 @@
                 contactLeatherFactor: 10.0, 
                 fullLeatherFactor: 10.0, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=圣日尔曼沙发',
+                image: 'shengrierman.png',
                 hasHardware: false,
                 name: '圣日尔曼'
             },
@@ -1417,7 +1545,7 @@
                 contactLeatherFactor: 9.0, 
                 fullLeatherFactor: 9.0, 
                 hardwarePrice: 0,
-                image: 'https://via.placeholder.com/500x300?text=john-john沙发',
+                image: 'john.png',
                 hasHardware: true,
                 name: 'john-john',
                 specialHardware: true
@@ -1971,7 +2099,7 @@
             const button = document.querySelector(`.copy-button[data-type="${type}"]`);
             if (button) {
                 button.classList.add('copied');
-                button.textContent = '已复制，直接发客户';
+                button.textContent = '已复制';
                 
                 setTimeout(() => {
                     button.classList.remove('copied');
@@ -2139,7 +2267,7 @@
             updatePriceDisplay(contactLeatherResult, prices.contactLeatherTotalPrice.toFixed(2) + ' 元');
             updatePriceDisplay(fullLeatherResult, prices.fullLeatherTotalPrice.toFixed(2) + ' 元');
             updatePriceDisplay(hardwareResult, prices.hardwareTotalPrice.toFixed(2) + ' 元');
-            updatePriceDisplay(fabricUsageResult, prices.fabricUsage.toFixed(2) + ' 平方米');
+            updatePriceDisplay(fabricUsageResult, prices.fabricUsage.toFixed(2) + ' 米');
 
             // 销售报价向上取整到最近的10
             const roundToTen = (num) => Math.ceil(num / 10) * 10;
@@ -2212,6 +2340,14 @@
             });
             
             console.log('沙发报价工具已初始化');
+            
+            // 设置所有五金配件数量输入框的步进值为1
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                if (input.id !== 'salesCoefficient') {
+                    input.step = "1";
+                    input.min = "0";
+                }
+            });
         }
 
         function clearResults() {
@@ -2220,7 +2356,7 @@
             contactLeatherResult.textContent = '0.00 元';
             fullLeatherResult.textContent = '0.00 元';
             hardwareResult.textContent = '0.00 元';
-            fabricUsageResult.textContent = '0.00 平方米';
+            fabricUsageResult.textContent = '0.00 米';
             fabricSalesResult.textContent = '0.00 元';
             contactLeatherSalesResult.textContent = '0.00 元';
             fullLeatherSalesResult.textContent = '0.00 元';
@@ -2360,7 +2496,8 @@
 
         // 修改销售报价系数的事件监听，实现实时计算
         salesCoefficient.addEventListener('input', function() {
-            const coefficient = parseFloat(this.value) || 1.0;
+            const coefficient = parseFloat(this.value);
+            document.getElementById('salesCoefficientValue').textContent = coefficient.toFixed(2);
             
             // 获取基础价格
             const fabricPrice = parseFloat(fabricResult.textContent) || 0;
@@ -2368,11 +2505,53 @@
             const fullLeatherPrice = parseFloat(fullLeatherResult.textContent) || 0;
             
             // 实时更新销售报价
-            updatePriceDisplay(fabricSalesResult, (fabricPrice * coefficient).toFixed(2) + ' 元');
-            updatePriceDisplay(contactLeatherSalesResult, (contactLeatherPrice * coefficient).toFixed(2) + ' 元');
-            updatePriceDisplay(fullLeatherSalesResult, (fullLeatherPrice * coefficient).toFixed(2) + ' 元');
+            const roundToTen = (num) => Math.ceil(num / 10) * 10;
+            updatePriceDisplay(fabricSalesResult, roundToTen(fabricPrice * coefficient) + ' 元');
+            updatePriceDisplay(contactLeatherSalesResult, roundToTen(contactLeatherPrice * coefficient) + ' 元');
+            updatePriceDisplay(fullLeatherSalesResult, roundToTen(fullLeatherPrice * coefficient) + ' 元');
         });
+        
+        
+        // 禁用F12、Ctrl+Shift+I、Ctrl+Shift+J、Ctrl+U
+        document.addEventListener('keydown', function(e) {
+            if (
+                e.keyCode === 123 || // F12
+                (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || // Ctrl+Shift+I or Ctrl+Shift+J
+                (e.ctrlKey && e.keyCode === 85) // Ctrl+U
+            ) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+        // 禁用开发者工具的一些检测
+        (function() {
+            function detectDevTools() {
+                const widthThreshold = 160;
+                const heightThreshold = 160;
+                
+                if (
+                    window.outerWidth - window.innerWidth > widthThreshold ||
+                    window.outerHeight - window.innerHeight > heightThreshold
+                ) {
+                    document.body.innerHTML = '<div style="text-align:center;padding:50px;"><h1>请关闭开发者工具后刷新页面</h1></div>';
+                }
+            }
+            
+            window.addEventListener('resize', detectDevTools);
+            setInterval(detectDevTools, 1000);
+        })();
+        
+        // 原始代码开始
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化水印
+            addWatermark();
+            window.addEventListener('resize', addWatermark);
+            
+            // ... existing code ...
+        });
+        
+        // ... existing code ...
     </script>
 </body>
-</html> 
 </html> 
