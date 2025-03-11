@@ -664,20 +664,20 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="sizeInput">尺寸 (厘米):</label>
-                        <input type="text" id="sizeInput" placeholder="请输入尺寸">
+                        <input type="number" id="sizeInput" placeholder="请输入尺寸" step="1" min="0" inputmode="numeric" pattern="[0-9]*">
                         <div id="sizeError" class="error-message">请输入有效的数字</div>
                     </div>
                     
                     <div class="form-group">
                         <label for="fabricPriceInput">面料价格(布) (元/米):</label>
-                        <input type="text" id="fabricPriceInput" placeholder="请输入布料价格">
+                        <input type="number" id="fabricPriceInput" placeholder="请输入布料价格" step="1" min="0" inputmode="numeric" pattern="[0-9]*">
                         <div id="fabricPriceError" class="error-message">请输入有效的数字</div>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="leatherPriceInput">面料价格(真皮) (元/米):</label>
-                    <input type="text" id="leatherPriceInput" placeholder="请输入真皮价格">
+                    <input type="number" id="leatherPriceInput" placeholder="请输入真皮价格" step="0.1" min="0" inputmode="decimal">
                     <div id="leatherPriceError" class="error-message">请输入有效的数字</div>
                 </div>
 
